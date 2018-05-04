@@ -37,6 +37,11 @@ define( 'DB_CHARSET', 'utf8' );
 /** The Database Collate type. Don't change this if in doubt. */
 define( 'DB_COLLATE', '' );
 
+/** AGILE CLIENT CONFIGURATION */
+define( 'AGILE_HOST', 'agile-security:3000');
+define( 'AGILE_ID', '' );
+define( 'AGILE_SECRET', '' );
+
 /**#@+
  * Authentication Unique Keys and Salts.
  *

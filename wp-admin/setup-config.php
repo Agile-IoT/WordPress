@@ -236,6 +236,21 @@ switch ( $step ) {
 			<td><input name="prefix" id="prefix" type="text" value="wp_" size="25" /></td>
 			<td><?php _e( 'If you want to run multiple WordPress installations in a single database, change this.' ); ?></td>
 		</tr>
+        <tr>
+            <th scope="row"><label for="prefix"><?php _e( 'AGILE security host' ); ?></label></th>
+            <td><input name="agile-host" id="agile-host" type="text" value="agile-security:3000" size="25" /></td>
+            <td><?php _e( 'The host address of AGILE security' ); ?></td>
+        </tr>
+        <tr>
+            <th scope="row"><label for="prefix"><?php _e( 'AGILE client ID' ); ?></label></th>
+            <td><input name="agile-id" id="agile-id" type="text" value="" size="25" /></td>
+            <td><?php _e( 'The ID of the client entity in AGILE' ); ?></td>
+        </tr>
+        <tr>
+            <th scope="row"><label for="prefix"><?php _e( 'AGILE client secret' ); ?></label></th>
+            <td><input name="agile-secret" id="agile-secret" type="text" value="" size="25" /></td>
+            <td><?php _e( 'The secret of the client entity in AGILE' ); ?></td>
+        </tr>
 	</table>
 	<?php
 	if ( isset( $_GET['noapi'] ) ) {
@@ -256,6 +271,9 @@ switch ( $step ) {
 		$pwd    = trim( wp_unslash( $_POST['pwd'] ) );
 		$dbhost = trim( wp_unslash( $_POST['dbhost'] ) );
 		$prefix = trim( wp_unslash( $_POST['prefix'] ) );
+		$agile_host = trim( wp_unslash( $_POST['agile-host'] ) );
+		$agile_id = trim( wp_unslash( $_POST['agile-id'] ) );
+		$agile_secret = trim( wp_unslash( $_POST['agile-secret'] ) );
 
 		$step_1  = 'setup-config.php?step=1';
 		$install = 'install.php';
@@ -290,6 +308,10 @@ switch ( $step ) {
 		define( 'DB_USER', $uname );
 		define( 'DB_PASSWORD', $pwd );
 		define( 'DB_HOST', $dbhost );
+		define( 'AGILE_HOST', $agile_host );
+		define( 'AGILE_ID', $agile_id );
+		define( 'AGILE_SECRET', $agile_secret );
+
 		/**#@-*/
 
 		// Re-construct $wpdb with these new values.
@@ -364,6 +386,9 @@ switch ( $step ) {
 				case 'DB_USER':
 				case 'DB_PASSWORD':
 				case 'DB_HOST':
+                case 'AGILE_HOST':
+                case 'AGILE_ID':
+                case 'AGILE_SECRET':
 					$config_file[ $line_num ] = "define( '" . $constant . "'," . $padding . "'" . addcslashes( constant( $constant ), "\\'" ) . "' );\r\n";
 					break;
 				case 'DB_CHARSET':
