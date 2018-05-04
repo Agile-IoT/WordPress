@@ -9,7 +9,7 @@
 class AGILE
 {
 
-    private $read_caps = ["read", "read_private_pages", "read_private_posts", "list_users", "export"];
+    private $read_caps = ["read", "read_post", "read_private_pages", "read_private_posts", "list_users", "export", "export_others_personal_data"];
     private $actions = array();
     private $token;
 
