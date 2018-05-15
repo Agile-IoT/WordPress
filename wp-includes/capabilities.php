@@ -1,4 +1,5 @@
 <?php
+require_once( dirname(__FILE__). '/../AGILE.php' );
 /**
  * Core User Role & Capabilities API
  *
@@ -602,16 +603,18 @@ function map_meta_cap( $cap, $user_id ) {
  * @return bool Whether the current user has the given capability. If `$capability` is a meta cap and `$object_id` is
  *              passed, whether the current user has the given meta capability for the given object.
  */
+$agile = new AGILE();
 function current_user_can( $capability ) {
-    require_once( dirname(__FILE__). '/../AGILE.php' );
+    global $agile;
     $current_user = wp_get_current_user();
 
     if ( empty( $current_user ) ) {
         return false;
     }
 
-    $agile = new AGILE();
-    $agile->init();
+    if($agile->hasToken()) {
+        $agile->init();
+    }
     return $agile->evaluate($capability);
 }
 
