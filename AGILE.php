@@ -11,6 +11,7 @@ class AGILE
 
     private $read_caps = ["read", "read_post", "read_private_pages", "read_private_posts", "list_users", "export", "export_others_personal_data"];
     private $actions = array();
+    private $policies = array();
     private $token;
 
     function getCaps()
@@ -19,13 +20,17 @@ class AGILE
         return $wp_roles->roles;
     }
 
+    function getLocalCaps() {
+        $file = dirname(__FILE__) . '/caps.json';
+        $data = file_get_contents($file);
+        return json_decode($data, true);
+    }
+
     function init()
     {
         //file_put_contents(dirname(__FILE__) . '/caps.json', json_encode($this->getCaps()));
 
-        $file = dirname(__FILE__) . '/caps.json';
-        $data = file_get_contents($file);
-        $caps = json_decode($data, true);
+        $caps = $this->getLocalCaps();
         foreach ($caps as $cap => $values) {
             foreach ($values as $key => $value) {
                 if ($key == "capabilities") {
@@ -45,6 +50,7 @@ class AGILE
         //if(!($this->hasToken())) {
         if (!isset($_SESSION['token'])) {
             $this->register();
+            $this->evaluateBatch();
         } else {
             $this->token = $_SESSION['token'];
         }
@@ -94,13 +100,15 @@ class AGILE
         }
     }
 
-
-    function evaluate($capability)
-    {
-        $method = $this->findMethod($capability);
-        $locks = array("entityId" => AGILE_ID, "entityType" => "client", "field" => "database", "method" => $method);
+    function evaluateBatch() {
+        $locks = array();
+        foreach ($this->actions as $cap => $values) {
+            $method = $this->findMethod($cap);
+            $lock = array("entityId" => AGILE_ID, "entityType" => "client", "field" => "database", "method" => $method);
+            array_push($locks, $lock);
+        }
         $data = new \stdClass();
-        $data->actions = array($locks);
+        $data->actions = $locks;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_URL, "http://" . AGILE_HOST . "/api/v1//pdp/batch/");
@@ -118,12 +126,24 @@ class AGILE
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $body = substr($response, $header_size);
         curl_close($ch);
+
         if ($httpcode == 200) {
-            $result = json_decode($body);
-            return $result->result[0];
+            $result = json_decode($body)->result;
+            $i = 0;
+            foreach ($this->actions as $cap => $values) {
+                $this->policies[$cap] = $result[$i++];
+            }
         } else {
-            return false;
+            $this->policies = array();
         }
+    }
+
+    function evaluate($capability)
+    {
+        if(sizeof($this->policies) == 0) {
+            $this->evaluateBatch();
+        }
+        return $this->policies[$capability];
     }
 
     function getPolicies()
