@@ -143,7 +143,11 @@ class AGILE
         if(sizeof($this->policies) == 0) {
             $this->evaluateBatch();
         }
-        return $this->policies[$capability];
+        if(isset($this->policies[$capability])) {
+            return $this->policies[$capability];
+        } else {
+            return false;
+        }
     }
 
     function getPolicies()
