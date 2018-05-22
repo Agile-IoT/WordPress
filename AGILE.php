@@ -104,7 +104,7 @@ class AGILE
         $locks = array();
         foreach ($this->actions as $cap => $values) {
             $method = $this->findMethod($cap);
-            $lock = array("entityId" => AGILE_ID, "entityType" => "client", "field" => "database", "method" => $method);
+            $lock = array("entityId" => "wordpress", "entityType" => "client", "field" => "actions." . $cap, "method" => $method);
             array_push($locks, $lock);
         }
         $data = new \stdClass();
@@ -115,7 +115,7 @@ class AGILE
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
-            'Authorization: Bearer ' . $this->token
+            'Authorization: Bearer ' . $_COOKIE["token"]
         ));
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
@@ -136,6 +136,7 @@ class AGILE
         } else {
             $this->policies = array();
         }
+        var_dump($this->policies);
     }
 
     function evaluate($capability)
