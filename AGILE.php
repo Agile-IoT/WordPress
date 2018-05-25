@@ -6,6 +6,18 @@
  * Time: 12:13 PM
  */
 
+if (!function_exists('write_log')) {
+    function write_log ( $log )  {
+        if ( true === WP_DEBUG ) {
+            if ( is_array( $log ) || is_object( $log ) ) {
+                error_log( print_r( $log, true ) );
+            } else {
+                error_log( $log );
+            }
+        }
+    }
+}
+
 class AGILE
 {
 
@@ -48,12 +60,12 @@ class AGILE
         }
         //var_dump($this->actions);
         //if(!($this->hasToken())) {
-        if (!isset($_SESSION['token'])) {
-            $this->register();
-            $this->evaluateBatch();
-        } else {
-            $this->token = $_SESSION['token'];
-        }
+//        if (!isset($_SESSION['token'])) {
+//            $this->register();
+//            $this->evaluateBatch();
+//        } else {
+//            $this->token = $_SESSION['token'];
+//        }
         //} else {
         //  echo $this->token;
         //}
@@ -82,7 +94,7 @@ class AGILE
             $this->token = $result->access_token;
             $_SESSION['token'] = $this->token;
         } else {
-            echo "Could not get token from AGILE";
+            write_log("AGILE.register: Could not get token from AGILE");
         }
     }
 
@@ -104,7 +116,7 @@ class AGILE
         $locks = array();
         foreach ($this->actions as $cap => $values) {
             $method = $this->findMethod($cap);
-            $lock = array("entityId" => "wordpress", "entityType" => "client", "field" => "actions." . $cap, "method" => $method);
+            $lock = array("entityId" => "wordpress", "entityType" => "/client", "field" => "actions." . $cap, "method" => $method);
             array_push($locks, $lock);
         }
         $data = new \stdClass();
@@ -136,7 +148,7 @@ class AGILE
         } else {
             $this->policies = array();
         }
-        var_dump($this->policies);
+        //var_dump($this->policies);
     }
 
     function evaluate($capability)
@@ -182,7 +194,7 @@ class AGILE
             $cookie_value = $this->token;
             setcookie($cookie_name, $cookie_value, time() + (86400 * 30), "/");
         } else {
-            echo "Could not get token from AGILE";
+            write_log("AGILE.authUser: Could not get token from AGILE");
         }
         return $this->token;
     }
@@ -206,7 +218,7 @@ class AGILE
             $user = json_decode($body);
             return $user;
         } else {
-            echo "Could not get token from AGILE";
+            write_log("AGILE.getUser: Could not get token from AGILE");
         }
         return $this->token;
     }
