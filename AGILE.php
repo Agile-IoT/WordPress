@@ -59,32 +59,38 @@ class AGILE
             // $this->actions[$cap] = $values;
         }
         //var_dump($this->actions);
-        //if(!($this->hasToken())) {
-//        if (!isset($_SESSION['token'])) {
-//            $this->register();
-//            $this->evaluateBatch();
-//        } else {
-//            $this->token = $_SESSION['token'];
-//        }
-        //} else {
-        //  echo $this->token;
-        //}
+        if (!isset($_SESSION['client_token'])) {
+            $this->register();
+            $this->evaluateBatch();
+        } else {
+            $this->token = $_SESSION['client_token'];
+        }
     }
-
 
     function register()
     {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_URL, "http://" . AGILE_HOST . "/oauth2/token");
-        curl_setopt($ch, CURLOPT_USERPWD, AGILE_ID . ":" . AGILE_SECRET);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array("grant_type" => "client_credentials")));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
 
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . "/oauth2/token");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
+            "grant_type" => "client_credentials",
+            "scope" => "openid")));
+        curl_setopt($ch, CURLOPT_POST, 1);
+        //Ignore self signed SSL certificate warning
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $headers = array();
+        $headers[] = "Authorization: Basic " . base64_encode(SECURITY_CLIENT_ID . ":" . SECURITY_CLIENT_SECRET);
+        $headers[] = "Content-Type: application/x-www-form-urlencoded";
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            write_log('Register Error:' . curl_error($ch));
+        }
+
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $body = substr($response, $header_size);
@@ -92,9 +98,9 @@ class AGILE
         if ($httpcode == 200) {
             $result = json_decode($body);
             $this->token = $result->access_token;
-            $_SESSION['token'] = $this->token;
+            $_SESSION['client_token'] = $this->token;
         } else {
-            write_log("AGILE.register: Could not get token from AGILE");
+            write_log("register: Could not get token from AGILE");
         }
     }
 
@@ -113,40 +119,67 @@ class AGILE
     }
 
     function evaluateBatch() {
-        $locks = array();
-        foreach ($this->actions as $cap => $values) {
-            $method = $this->findMethod($cap);
-            $lock = array("entityId" => "wordpress", "entityType" => "/client", "field" => "actions." . $cap, "method" => $method);
-            array_push($locks, $lock);
-        }
-        $data = new \stdClass();
-        $data->actions = $locks;
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_URL, "http://" . AGILE_HOST . "/api/v1//pdp/batch/");
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . $_COOKIE["token"]
-        ));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $response = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        $body = substr($response, $header_size);
-        curl_close($ch);
-
-        if ($httpcode == 200) {
-            $result = json_decode($body)->result;
-            $i = 0;
+        $user = wp_get_current_user();
+        if($user->ID > 0) {
+            $data = array();
+            $request = array();
+            $action = array();
+            $accessSubject = array();
+            $resource = array();
+            $roles = get_userdata($user->ID)->roles;
+//            var_dump($roles);
             foreach ($this->actions as $cap => $values) {
-                $this->policies[$cap] = $result[$i++];
+                $method = strtolower($this->findMethod($cap));
+                $action['Attribute'] = array(array(
+                    "AttributeId" => "urn:oasis:names:tc:xacml:1.0:action:action-id",
+                    "Value" => $method));
+                $accessSubject['Attribute'] = array(array(
+                    "AttributeId" => "urn:oasis:names:tc:xacml:1.0:subject:role",
+                    "Value" => "administrator"));
+                $resource['Attribute'] = array(array(
+                    "AttributeId" => "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
+                    "Value" => $cap));
+
+
+                $request['Action'] = $action;
+                $request['AccessSubject'] = $accessSubject;
+                $request['Resource'] = $resource;
+                $data['Request'] = $request;
+
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_HEADER, true);
+                curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . "/api/identity/entitlement/decision/pdp");
+                curl_setopt($ch, CURLOPT_POST, 1);
+                $headers = array();
+                $headers[] = "Authorization: Basic " . base64_encode("admin:admin");
+                $headers[] = "Content-Type: application/json";
+
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                //Ignore self signed SSL certificate warning
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                $response = curl_exec($ch);
+                if (curl_errno($ch)) {
+                    write_log('evaluateBatch Error:' . curl_error($ch));
+                }
+                $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+                $body = substr($response, $header_size);
+                curl_close($ch);
+
+                if ($httpcode == 200) {
+                    $result = json_decode($body)->Response[0]->Decision;
+
+                    //var_dump($result);
+                    $this->policies[$cap] = $result === "Permit";
+
+                }
             }
         } else {
-            $this->policies = array();
+            write_log("No user found");
         }
         //var_dump($this->policies);
     }
@@ -171,20 +204,32 @@ class AGILE
     function authUser($username, $password)
     {
         $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . "/oauth2/token");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_URL,"http://" . AGILE_HOST . "/oauth2/usertoken");
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array(
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
             "grant_type" => "password",
             "username" => $username,
             "password" => $password)));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_USERPWD, SECURITY_CLIENT_ID . ":" . SECURITY_CLIENT_SECRET);
+        //Ignore self signed SSL certificate warning
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+
+        $headers = array();
+        $headers[] = "Content-Type: application/x-www-form-urlencoded";
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            write_log('AuthUser Error:' . curl_error($ch));
+        }
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $body = substr($response, $header_size);
+
         curl_close($ch);
         if ($httpcode == 200) {
             $result = json_decode($body);
@@ -194,31 +239,43 @@ class AGILE
             $cookie_value = $this->token;
             setcookie($cookie_name, $cookie_value, time() + (86400 * 30), "/");
         } else {
-            write_log("AGILE.authUser: Could not get token from AGILE");
+            write_log("authUser: Could not get token from " . SECURITY_HOST);
+            write_log("authUser: $response ");
         }
         return $this->token;
     }
 
-    function getUser($userid)
+    function getUser()
     {
-        $authorization = "Authorization: Bearer " . $_SESSION['token'];
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_URL,"http://" . AGILE_HOST . "/api/v1/entity/user/");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', $authorization));
-        curl_setopt($ch, CURLOPT_POST, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . "/oauth2/userinfo?schema=openid");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+        //Ignore self signed SSL certificate warning
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $headers = array();
+        $headers[] = "Authorization: Bearer " . $_SESSION['client_token'];
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            write_log('getUser Error:' . curl_error($ch));
+        }
+
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $body = substr($response, $header_size);
+
         curl_close($ch);
         if ($httpcode == 200) {
             $user = json_decode($body);
             return $user;
         } else {
-            write_log("AGILE.getUser: Could not get token from AGILE");
+            write_log("getUser: Could not get user info from AGILE");
+            write_log($response);
         }
         return $this->token;
     }

@@ -32,25 +32,25 @@
  */
 function wp_signon( $credentials = array(), $secure_cookie = '' ) {
     require_once( dirname(__FILE__). '/../AGILE.php' );
-	if ( empty( $credentials ) ) {
-		$credentials = array(); // Back-compat for plugins passing an empty string.
+    if ( empty( $credentials ) ) {
+        $credentials = array(); // Back-compat for plugins passing an empty string.
 
-		if ( ! empty( $_POST['log'] ) ) {
-			$credentials['user_login'] = $_POST['log'];
-		}
-		if ( ! empty( $_POST['pwd'] ) ) {
-			$credentials['user_password'] = $_POST['pwd'];
-		}
-		if ( ! empty( $_POST['rememberme'] ) ) {
-			$credentials['remember'] = $_POST['rememberme'];
-		}
-	}
+        if ( ! empty( $_POST['log'] ) ) {
+            $credentials['user_login'] = $_POST['log'];
+        }
+        if ( ! empty( $_POST['pwd'] ) ) {
+            $credentials['user_password'] = $_POST['pwd'];
+        }
+        if ( ! empty( $_POST['rememberme'] ) ) {
+            $credentials['remember'] = $_POST['rememberme'];
+        }
+    }
 
-	if ( ! empty( $credentials['remember'] ) ) {
-		$credentials['remember'] = true;
-	} else {
-		$credentials['remember'] = false;
-	}
+    if ( ! empty( $credentials['remember'] ) ) {
+        $credentials['remember'] = true;
+    } else {
+        $credentials['remember'] = false;
+    }
 
     if(isset($credentials['user_login']) && isset($credentials['user_password'])) {
         $agile = new AGILE();
@@ -58,17 +58,26 @@ function wp_signon( $credentials = array(), $secure_cookie = '' ) {
         $token = $agile->authUser($credentials['user_login'], $credentials['user_password']);
         if ($token) {
             $user = $agile->getUser($credentials['user_login']);
-            $user_id = username_exists( $user->user_name );
-            if ( !$user_id ) {
-                $user_id = wp_create_user( $user->user_name, $credentials['user_password'], null );
+            //TODO temporary solution.... find better user information in WSO2
+            $username = "";
+            $role = "";
+            if(SECURITY_SYSTEM == "AGILE") {
+                $username = $user->user_name;
+                $role = mapRole($user->role);
+            } else if (SECURITY_SYSTEM == "WSO2") {
+                $username = $user->sub;
+                $role = "administrator";
             }
-            wp_update_user( array( 'ID' => $user_id, 'role' => mapRole($user->role) ) );
+            $user_id = username_exists( $username);
+            if ( !$user_id ) {
+                $user_id = wp_create_user( $username, $credentials['user_password'], null );
+            }
+            wp_update_user( array( 'ID' => $user_id, 'role' =>  $role ) );
 
             return doDefaultAuth($credentials, $secure_cookie);
         }
     }
 }
-
 function mapRole($role) {
     $roles = array(
             'admin' => 'administrator',

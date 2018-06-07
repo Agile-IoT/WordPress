@@ -37,10 +37,12 @@ define( 'DB_CHARSET', 'utf8' );
 /** The Database Collate type. Don't change this if in doubt. */
 define( 'DB_COLLATE', '' );
 
-/** AGILE CLIENT CONFIGURATION */
-define( 'AGILE_HOST', 'agile-security:3000');
-define( 'AGILE_ID', '' );
-define( 'AGILE_SECRET', '' );
+/** SECURITY CLIENT CONFIGURATION */
+define( 'SECURITY_SYSTEM', 'WSO2');
+define( 'SECURITY_TOKEN_HOST', 'https://wso2apim:8243');
+define( 'SECURITY_USER_HOST', 'https://wso2apim:9443' );
+define( 'SECURITY_CLIENT_ID', 'sVkd33EWlkaDfxdtlLzRPl0bC1Aa' );
+define( 'SECURITY_CLIENT_SECRET', 'Bgs87J9z1l1vdq5A1DyjWg5FLv8a' );
 
 /**#@+
  * Authentication Unique Keys and Salts.
