@@ -127,7 +127,7 @@ class Security
             $accessSubject = array();
             $resource = array();
             $roles = get_userdata($user->ID)->roles;
-//            var_dump($roles);
+            $role = sizeof($roles) == 0 ? "user" : $roles[0];
             foreach ($this->actions as $cap => $values) {
                 $method = strtolower($this->findMethod($cap));
                 $action['Attribute'] = array(array(
@@ -135,7 +135,7 @@ class Security
                     "Value" => $method));
                 $accessSubject['Attribute'] = array(array(
                     "AttributeId" => "urn:oasis:names:tc:xacml:1.0:subject:role",
-                    "Value" => "administrator"));
+                    "Value" => $role));
                 $resource['Attribute'] = array(array(
                     "AttributeId" => "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
                     "Value" => $cap));
