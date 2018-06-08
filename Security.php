@@ -7,12 +7,13 @@
  */
 
 if (!function_exists('write_log')) {
-    function write_log ( $log )  {
-        if ( true === WP_DEBUG ) {
-            if ( is_array( $log ) || is_object( $log ) ) {
-                error_log( print_r( $log, true ) );
+    function write_log($log)
+    {
+        if (true === WP_DEBUG) {
+            if (is_array($log) || is_object($log)) {
+                error_log(print_r($log, true));
             } else {
-                error_log( $log );
+                error_log($log);
             }
         }
     }
@@ -32,7 +33,8 @@ class Security
         return $wp_roles->roles;
     }
 
-    function getLocalCaps() {
+    function getLocalCaps()
+    {
         $file = dirname(__FILE__) . '/caps.json';
         $data = file_get_contents($file);
         return json_decode($data, true);
@@ -61,7 +63,7 @@ class Security
         //var_dump($this->actions);
         if (!isset($_SESSION['client_token'])) {
             $this->register();
-            $this->evaluateBatch();
+            //$this->evaluateBatch();
         } else {
             $this->token = $_SESSION['client_token'];
         }
@@ -118,18 +120,19 @@ class Security
         }
     }
 
-    function evaluateBatch() {
-        $user = wp_get_current_user();
-        if($user->ID > 0) {
-            $data = array();
-            $request = array();
-            $action = array();
-            $accessSubject = array();
-            $resource = array();
-            $roles = get_userdata($user->ID)->roles;
-            $role = sizeof($roles) == 0 ? "user" : $roles[0];
-            foreach ($this->actions as $cap => $values) {
-                $method = strtolower($this->findMethod($cap));
+    function evaluate($capability)
+    {
+        if (!isset($this->policies[$capability])) {
+            $user = wp_get_current_user();
+            if ($user->ID > 0) {
+                $data = array();
+                $request = array();
+                $action = array();
+                $accessSubject = array();
+                $resource = array();
+                $roles = get_userdata($user->ID)->roles;
+                $role = sizeof($roles) == 0 ? "user" : $roles[0];
+                $method = strtolower($this->findMethod($capability));
                 $action['Attribute'] = array(array(
                     "AttributeId" => "urn:oasis:names:tc:xacml:1.0:action:action-id",
                     "Value" => $method));
@@ -138,7 +141,7 @@ class Security
                     "Value" => $role));
                 $resource['Attribute'] = array(array(
                     "AttributeId" => "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
-                    "Value" => $cap));
+                    "Value" => $capability));
 
 
                 $request['Action'] = $action;
@@ -174,25 +177,15 @@ class Security
                     $result = json_decode($body)->Response[0]->Decision;
 
                     //var_dump($result);
-                    $this->policies[$cap] = $result === "Permit";
-
+                    $this->policies[$capability] = $result === "Permit";
+                    return $this->policies[$capability];
                 }
+
+            } else {
+                write_log("No user found");
             }
         } else {
-            write_log("No user found");
-        }
-        //var_dump($this->policies);
-    }
-
-    function evaluate($capability)
-    {
-        if(sizeof($this->policies) == 0) {
-            $this->evaluateBatch();
-        }
-        if(isset($this->policies[$capability])) {
             return $this->policies[$capability];
-        } else {
-            return false;
         }
     }
 
