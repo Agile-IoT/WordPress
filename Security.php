@@ -151,7 +151,7 @@ class Security
                 curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . "/api/identity/entitlement/decision/pdp");
                 curl_setopt($ch, CURLOPT_POST, 1);
                 $headers = array();
-                $headers[] = "Authorization: Basic " . base64_encode("admin:admin");
+                $headers[] = "Authorization: Basic " . base64_encode(SECURITY_USER_ID . ":" . SECURITY_USER_SECRET);
                 $headers[] = "Content-Type: application/json";
 
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);

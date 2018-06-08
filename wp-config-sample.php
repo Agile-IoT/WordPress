@@ -42,6 +42,8 @@ define( 'SECURITY_SYSTEM', 'WSO2');
 define( 'SECURITY_HOST', 'https://wso2is:9443' );
 define( 'SECURITY_CLIENT_ID', 'hgm6eA_B8ZGwIFmJ9iJf_3hE0Jsa' );
 define( 'SECURITY_CLIENT_SECRET', 'E4LROiG6AUE4ZfmCWIaOtW3LyzAa' );
+define( 'SECURITY_USER_ID', 'wordpress');
+define( 'SECURITY_USER_SECRET', 'k8LZ6t4&fO2s');
 
 /**#@+
  * Authentication Unique Keys and Salts.
