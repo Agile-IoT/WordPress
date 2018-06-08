@@ -18,7 +18,7 @@ if (!function_exists('write_log')) {
     }
 }
 
-class AGILE
+class Security
 {
 
     private $read_caps = ["read", "read_post", "read_private_pages", "read_private_posts", "list_users", "export", "export_others_personal_data"];
@@ -100,7 +100,7 @@ class AGILE
             $this->token = $result->access_token;
             $_SESSION['client_token'] = $this->token;
         } else {
-            write_log("register: Could not get token from AGILE");
+            write_log("register: Could not get token from security");
         }
     }
 
@@ -274,7 +274,7 @@ class AGILE
             $user = json_decode($body);
             return $user;
         } else {
-            write_log("getUser: Could not get user info from AGILE");
+            write_log("getUser: Could not get user info from security");
             write_log($response);
         }
         return $this->token;

@@ -31,7 +31,7 @@
  * @return WP_User|WP_Error WP_User on success, WP_Error on failure.
  */
 function wp_signon( $credentials = array(), $secure_cookie = '' ) {
-    require_once( dirname(__FILE__). '/../AGILE.php' );
+    require_once(dirname(__FILE__) . '/../Security.php');
     if ( empty( $credentials ) ) {
         $credentials = array(); // Back-compat for plugins passing an empty string.
 
@@ -53,15 +53,15 @@ function wp_signon( $credentials = array(), $secure_cookie = '' ) {
     }
 
     if(isset($credentials['user_login']) && isset($credentials['user_password'])) {
-        $agile = new AGILE();
+        $sec = new Security();
         //$agile->init();
-        $token = $agile->authUser($credentials['user_login'], $credentials['user_password']);
+        $token = $sec->authUser($credentials['user_login'], $credentials['user_password']);
         if ($token) {
-            $user = $agile->getUser($credentials['user_login']);
+            $user = $sec->getUser($credentials['user_login']);
             //TODO temporary solution.... find better user information in WSO2
             $username = "";
             $role = "";
-            if(SECURITY_SYSTEM == "AGILE") {
+            if(SECURITY_SYSTEM == "security") {
                 $username = $user->user_name;
                 $role = mapRole($user->role);
             } else if (SECURITY_SYSTEM == "WSO2") {

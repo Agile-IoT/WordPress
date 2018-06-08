@@ -237,19 +237,19 @@ switch ( $step ) {
 			<td><?php _e( 'If you want to run multiple WordPress installations in a single database, change this.' ); ?></td>
 		</tr>
         <tr>
-            <th scope="row"><label for="prefix"><?php _e( 'AGILE security host' ); ?></label></th>
+            <th scope="row"><label for="prefix"><?php _e( 'security security host' ); ?></label></th>
             <td><input name="agile-host" id="agile-host" type="text" value="agile-security:3000" size="25" /></td>
-            <td><?php _e( 'The host address of AGILE security' ); ?></td>
+            <td><?php _e( 'The host address of security security' ); ?></td>
         </tr>
         <tr>
-            <th scope="row"><label for="prefix"><?php _e( 'AGILE client ID' ); ?></label></th>
+            <th scope="row"><label for="prefix"><?php _e( 'security client ID' ); ?></label></th>
             <td><input name="agile-id" id="agile-id" type="text" value="" size="25" /></td>
-            <td><?php _e( 'The ID of the client entity in AGILE' ); ?></td>
+            <td><?php _e( 'The ID of the client entity in security' ); ?></td>
         </tr>
         <tr>
-            <th scope="row"><label for="prefix"><?php _e( 'AGILE client secret' ); ?></label></th>
+            <th scope="row"><label for="prefix"><?php _e( 'security client secret' ); ?></label></th>
             <td><input name="agile-secret" id="agile-secret" type="text" value="" size="25" /></td>
-            <td><?php _e( 'The secret of the client entity in AGILE' ); ?></td>
+            <td><?php _e( 'The secret of the client entity in security' ); ?></td>
         </tr>
 	</table>
 	<?php

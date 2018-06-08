@@ -39,10 +39,9 @@ define( 'DB_COLLATE', '' );
 
 /** SECURITY CLIENT CONFIGURATION */
 define( 'SECURITY_SYSTEM', 'WSO2');
-define( 'SECURITY_TOKEN_HOST', 'https://wso2apim:8243');
-define( 'SECURITY_USER_HOST', 'https://wso2apim:9443' );
-define( 'SECURITY_CLIENT_ID', 'sVkd33EWlkaDfxdtlLzRPl0bC1Aa' );
-define( 'SECURITY_CLIENT_SECRET', 'Bgs87J9z1l1vdq5A1DyjWg5FLv8a' );
+define( 'SECURITY_HOST', 'https://wso2is:9443' );
+define( 'SECURITY_CLIENT_ID', 'hgm6eA_B8ZGwIFmJ9iJf_3hE0Jsa' );
+define( 'SECURITY_CLIENT_SECRET', 'E4LROiG6AUE4ZfmCWIaOtW3LyzAa' );
 
 /**#@+
  * Authentication Unique Keys and Salts.
