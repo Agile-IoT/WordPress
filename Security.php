@@ -62,7 +62,7 @@ class Security
         }
         //var_dump($this->actions);
         if (!isset($_SESSION['client_token'])) {
-            $this->register();
+            //$this->register();
             //$this->evaluateBatch();
         } else {
             $this->token = $_SESSION['client_token'];
@@ -204,7 +204,8 @@ class Security
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
             "grant_type" => "password",
             "username" => $username,
-            "password" => $password)));
+            "password" => $password,
+            "scope" => "openid")));
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_USERPWD, SECURITY_CLIENT_ID . ":" . SECURITY_CLIENT_SECRET);
         //Ignore self signed SSL certificate warning
@@ -227,8 +228,8 @@ class Security
         if ($httpcode == 200) {
             $result = json_decode($body);
             $this->token = $result->access_token;
-            $_SESSION['token'] = $this->token;
-            $cookie_name = 'token';
+            $_SESSION['client_token'] = $this->token;
+            $cookie_name = 'client_token';
             $cookie_value = $this->token;
             setcookie($cookie_name, $cookie_value, time() + (86400 * 30), "/");
         } else {
@@ -252,6 +253,7 @@ class Security
         $headers[] = "Authorization: Bearer " . $_SESSION['client_token'];
 
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        // curl_setopt($ch, CURLOPT_USERPWD, SECURITY_CLIENT_ID . ":" . SECURITY_CLIENT_SECRET);
 
         $response = curl_exec($ch);
         if (curl_errno($ch)) {

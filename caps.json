@@ -75,7 +75,8 @@
       "read_post": true,
       "assign_categories": true,
       "edit_categories": true,
-      "delete_user": true
+      "delete_user": true,
+      "edit_user": true
     }
   },
   "editor": {
