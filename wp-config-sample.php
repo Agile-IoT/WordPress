@@ -38,6 +38,7 @@ define( 'DB_CHARSET', 'utf8' );
 define( 'DB_COLLATE', '' );
 
 /** SECURITY CLIENT CONFIGURATION */
+/*
 define( 'SECURITY_SYSTEM', 'WSO2');
 define( 'SECURITY_HOST', 'https://wso2is:9443' );
 define( 'SECURITY_CLIENT_ID', 'hgm6eA_B8ZGwIFmJ9iJf_3hE0Jsa' );
@@ -46,6 +47,16 @@ define( 'SECURITY_USER_ID', 'wordpress');
 define( 'SECURITY_USER_SECRET', 'k8LZ6t4&fO2s');
 define( 'SECURITY_USER_INFO_PATH', '/oauth2/userinfo?schema=openid');
 define( 'SECURITY_PDP_PATH', '/api/identity/entitlement/decision/pdp');
+define( 'SECURITY_CACHE', false);
+*/
+define( 'SECURITY_SYSTEM', 'AGILE');
+define( 'SECURITY_HOST', 'http://agile-security:3000' );
+define( 'SECURITY_CLIENT_ID', 'wordpress' );
+define( 'SECURITY_CLIENT_SECRET', 'secret' );
+define( 'SECURITY_USER_ID', '');
+define( 'SECURITY_USER_SECRET', '');
+define( 'SECURITY_USER_INFO_PATH', '/oauth2/api/userinfo/');
+define( 'SECURITY_PDP_PATH', '/api/v1//pdp/batch/');
 define( 'SECURITY_CACHE', true);
 
 /**#@+
