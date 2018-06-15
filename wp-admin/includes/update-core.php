@@ -900,7 +900,7 @@ function update_core( $from, $to ) {
 	$distro = '';
 	$roots  = array( '/wordpress/', '/wordpress-mu/' );
 	foreach ( $roots as $root ) {
-		if ( $wp_filesystem->exists( $from . $root . 'readme.html' ) && $wp_filesystem->exists( $from . $root . 'wp-includes/version.php' ) ) {
+		if ( $wp_filesystem->exists( $from . $root . 'README.md' ) && $wp_filesystem->exists( $from . $root . 'wp-includes/version.php' ) ) {
 			$distro = $root;
 			break;
 		}
