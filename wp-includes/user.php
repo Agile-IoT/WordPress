@@ -61,7 +61,7 @@ function wp_signon( $credentials = array(), $secure_cookie = '' ) {
             //TODO temporary solution.... find better user information in WSO2
             $username = "";
             $role = "";
-            if(SECURITY_SYSTEM == "security") {
+            if(SECURITY_SYSTEM == "AGILE") {
                 $username = $user->user_name;
                 $role = mapRole($user->role);
             } else if (SECURITY_SYSTEM == "WSO2") {

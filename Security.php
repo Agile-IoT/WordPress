@@ -58,51 +58,6 @@ class Security
                     $values[$key] = $value;
                 }
             }
-            // $this->actions[$cap] = $values;
-        }
-        //var_dump($this->actions);
-        if (!isset($_SESSION['client_token'])) {
-            //$this->register();
-            //$this->evaluateBatch();
-        } else {
-            $this->token = $_SESSION['client_token'];
-        }
-    }
-
-    function register()
-    {
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . "/oauth2/token");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array(
-            "grant_type" => "client_credentials",
-            "scope" => "openid")));
-        curl_setopt($ch, CURLOPT_POST, 1);
-        //Ignore self signed SSL certificate warning
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        $headers = array();
-        $headers[] = "Authorization: Basic " . base64_encode(SECURITY_CLIENT_ID . ":" . SECURITY_CLIENT_SECRET);
-        $headers[] = "Content-Type: application/x-www-form-urlencoded";
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-        $response = curl_exec($ch);
-        if (curl_errno($ch)) {
-            write_log('Register Error:' . curl_error($ch));
-        }
-
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        $body = substr($response, $header_size);
-        curl_close($ch);
-        if ($httpcode == 200) {
-            $result = json_decode($body);
-            $this->token = $result->access_token;
-            $_SESSION['client_token'] = $this->token;
-        } else {
-            write_log("register: Could not get token from security");
         }
     }
 
@@ -120,72 +75,171 @@ class Security
         }
     }
 
-    function evaluate($capability)
+    function evaluateWSO2($capability)
     {
-        if (!isset($this->policies[$capability])) {
-            $user = wp_get_current_user();
-            if ($user->ID > 0) {
-                $data = array();
-                $request = array();
-                $action = array();
-                $accessSubject = array();
-                $resource = array();
-                $roles = get_userdata($user->ID)->roles;
-                $role = sizeof($roles) == 0 ? "user" : $roles[0];
-                $method = strtolower($this->findMethod($capability));
-                $action['Attribute'] = array(array(
-                    "AttributeId" => "urn:oasis:names:tc:xacml:1.0:action:action-id",
-                    "Value" => $method));
-                $accessSubject['Attribute'] = array(array(
-                    "AttributeId" => "urn:oasis:names:tc:xacml:1.0:subject:role",
-                    "Value" => $role));
-                $resource['Attribute'] = array(array(
-                    "AttributeId" => "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
-                    "Value" => $capability));
+        $user = wp_get_current_user();
+        if ($user->ID > 0) {
+            $data = array();
+            $request = array();
+            $action = array();
+            $accessSubject = array();
+            $resource = array();
+            $roles = get_userdata($user->ID)->roles;
+            $role = sizeof($roles) == 0 ? "user" : $roles[0];
+            $method = strtolower($this->findMethod($capability));
+            $action['Attribute'] = array(array(
+                "AttributeId" => "urn:oasis:names:tc:xacml:1.0:action:action-id",
+                "Value" => $method));
+            $accessSubject['Attribute'] = array(array(
+                "AttributeId" => "urn:oasis:names:tc:xacml:1.0:subject:role",
+                "Value" => $role));
+            $resource['Attribute'] = array(array(
+                "AttributeId" => "urn:oasis:names:tc:xacml:1.0:resource:resource-id",
+                "Value" => $capability));
 
 
-                $request['Action'] = $action;
-                $request['AccessSubject'] = $accessSubject;
-                $request['Resource'] = $resource;
-                $data['Request'] = $request;
+            $request['Action'] = $action;
+            $request['AccessSubject'] = $accessSubject;
+            $request['Resource'] = $resource;
+            $data['Request'] = $request;
 
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_HEADER, true);
-                curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . "/api/identity/entitlement/decision/pdp");
-                curl_setopt($ch, CURLOPT_POST, 1);
-                $headers = array();
-                $headers[] = "Authorization: Basic " . base64_encode(SECURITY_USER_ID . ":" . SECURITY_USER_SECRET);
-                $headers[] = "Content-Type: application/json";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_HEADER, true);
+            curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . SECURITY_PDP_PATH);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            $headers = array();
+            $headers[] = "Authorization: Basic " . base64_encode(SECURITY_USER_ID . ":" . SECURITY_USER_SECRET);
+            $headers[] = "Content-Type: application/json";
 
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                //Ignore self signed SSL certificate warning
-                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-                $response = curl_exec($ch);
-                if (curl_errno($ch)) {
-                    write_log('evaluateBatch Error:' . curl_error($ch));
-                }
-                $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-                $body = substr($response, $header_size);
-                curl_close($ch);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            //Ignore self signed SSL certificate warning
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+            $response = curl_exec($ch);
+            if (curl_errno($ch)) {
+                write_log('evaluateBatch Error:' . curl_error($ch));
+            }
+            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            $body = substr($response, $header_size);
+            curl_close($ch);
 
-                if ($httpcode == 200) {
-                    $result = json_decode($body)->Response[0]->Decision;
+            if ($httpcode == 200) {
+                $result = json_decode($body)->Response[0]->Decision;
 
-                    //var_dump($result);
-                    $this->policies[$capability] = $result === "Permit";
-                    return $this->policies[$capability];
-                }
+                //var_dump($result);
+                $this->policies[$capability] = $result === "Permit";
+                return $this->policies[$capability];
+            }
 
-            } else {
-                write_log("No user found");
+        } else {
+            write_log("No user found");
+        }
+    }
+
+    function evaluateBatch()
+    {
+        $locks = array();
+        foreach ($this->actions as $cap => $values) {
+            $method = $this->findMethod($cap);
+            $lock = array("entityId" => "wordpress", "entityType" => "/client", "field" => "actions." . $cap, "method" => $method);
+            array_push($locks, $lock);
+        }
+        $data = new \stdClass();
+        $data->actions = $locks;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . SECURITY_PDP_PATH);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $_COOKIE["client_token"]
+        ));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $body = substr($response, $header_size);
+        curl_close($ch);
+
+        if ($httpcode == 200) {
+            $result = json_decode($body)->result;
+            $i = 0;
+            foreach ($this->actions as $cap => $values) {
+                $this->policies[$cap] = $result[$i++];
             }
         } else {
-            return $this->policies[$capability];
+            $this->policies = array();
+        }
+        //var_dump($this->policies);
+    }
+
+    function evaluateSingle($capability)
+    {
+        $locks = array();
+
+        $method = $this->findMethod($capability);
+        $lock = array("entityId" => "wordpress", "entityType" => "/client", "field" => "actions." . $capability, "method" => $method);
+        array_push($locks, $lock);
+
+        $data = new \stdClass();
+        $data->actions = $locks;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . SECURITY_PDP_PATH);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $_COOKIE["client_token"]
+        ));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $body = substr($response, $header_size);
+        curl_close($ch);
+
+        if ($httpcode == 200) {
+            $result = json_decode($body)->result;
+            $this->policies[$capability] = $result[0];
+        } else {
+            $this->policies[$capability] = false;
+        }
+        //var_dump($this->policies);
+    }
+
+    function evaluate($capability)
+    {
+        if (isset($_COOKIE["client_token"])) {
+            if (!isset($this->policies[$capability])) {
+                if (SECURITY_SYSTEM == "WSO2") {
+                    return $this->evaluateWSO2($capability);
+                } else if (SECURITY_SYSTEM == "AGILE") {
+                    if (SECURITY_CACHE) {
+                        $this->evaluateBatch();
+                    } else {
+                        $this->evaluateSingle($capability);
+                    }
+                    if (isset($this->policies[$capability])) {
+                        return $this->policies[$capability];
+                    } else {
+                        return false;
+                    }
+                }
+            } else {
+                return $this->policies[$capability];
+            }
+        } else {
+            return false;
         }
     }
 
@@ -243,7 +297,7 @@ class Security
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . "/oauth2/userinfo?schema=openid");
+        curl_setopt($ch, CURLOPT_URL, SECURITY_HOST . SECURITY_USER_INFO_PATH);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
         //Ignore self signed SSL certificate warning
@@ -263,7 +317,6 @@ class Security
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $body = substr($response, $header_size);
-
         curl_close($ch);
         if ($httpcode == 200) {
             $user = json_decode($body);
