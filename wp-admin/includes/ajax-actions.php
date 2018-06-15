@@ -4328,7 +4328,7 @@ function wp_ajax_edit_theme_plugin_file() {
 }
 
 function wp_ajax_wp_privacy_export_personal_data() {
-	check_ajax_referer( 'wp-privacy-export-personal-data', 'Security');
+	check_ajax_referer( 'wp-privacy-export-personal-data', 'security' );
 
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_send_json_error( __( 'Error: Invalid request.' ) );
@@ -4460,7 +4460,7 @@ function wp_ajax_wp_privacy_erase_personal_data() {
 		wp_send_json_error( __( 'Error: Invalid request.' ) );
 	}
 
-	check_ajax_referer( 'wp-privacy-erase-personal-data-' . $request_id, 'Security');
+	check_ajax_referer( 'wp-privacy-erase-personal-data-' . $request_id, 'security' );
 
 	// Find the request CPT
 	$request = get_post( $request_id );
