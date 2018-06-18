@@ -26,10 +26,34 @@ On the next page (edit page) you can configure the service. Expand the "Inbound 
 Enter any callback Url, e. g. localhost and click on "add". 
 After the service was successfully added, you can view the OAuth Client Key and Oauth Client Secret of the service. 
 
-Copy both to the configuration file in WordPress as the client credentials, e. g.:
+Copy both to the configuration file (wp-config.php) in WordPress as the client credentials, e. g.:
 
     define( 'SECURITY_CLIENT_ID', 'hgm6eA_B8ZGwIFmJ9iJf_3hE0Jsa' );
     define( 'SECURITY_CLIENT_SECRET', 'E4LROiG6AUE4ZfmCWIaOtW3LyzAa' ); 
+
+##### 2.3 Add a service user
+
+Go to "Users and Roles" -> "Add" -> "Add New User" and fill in the required fields. Since this user will be used by wordpress, you can name give it the name "wordpress". 
+On the next page, you should assign the admin role to the new user. Finish the process.
+
+##### 2.4 Add the service user credentials to the configuration file and adjust the rest of the WordPress configuration
+
+In wp-config.php, you need to add the service user credentials, e. g.:
+
+    define( 'SECURITY_USER_ID', 'wordpress');
+    define( 'SECURITY_USER_SECRET', 'k8LZ6t4&fO2s');
+
+The configuration file should containing following lines:
+
+    define( 'SECURITY_SYSTEM', 'WSO2');
+    define( 'SECURITY_HOST', 'https://wso2is:9443' );
+    define( 'SECURITY_CLIENT_ID', 'hgm6eA_B8ZGwIFmJ9iJf_3hE0Jsa' );
+    define( 'SECURITY_CLIENT_SECRET', 'E4LROiG6AUE4ZfmCWIaOtW3LyzAa' );
+    define( 'SECURITY_USER_ID', 'wordpress');
+    define( 'SECURITY_USER_SECRET', 'k8LZ6t4&fO2s');
+    define( 'SECURITY_USER_INFO_PATH', '/oauth2/userinfo?schema=openid');
+    define( 'SECURITY_PDP_PATH', '/api/identity/entitlement/decision/pdp');
+    define( 'SECURITY_CACHE', false);  
 
 #### 3. Add roles to userinfo
 
@@ -46,4 +70,8 @@ Go to "Registry" -> "Browse" -> "_system" -> "config" -> "oidc". Expand the "Pro
 
 #### 5. Add WordPress policies
 
-Add policies for the WordPress capabilities. You can find example policies for WordPress in the [capabilities XML file](https://github.com/firsti/WordPress/blob/master/caps.xml).       
+Add policies for the WordPress capabilities. You can find example policies for WordPress in the [capabilities XML file](https://github.com/firsti/WordPress/blob/master/caps.xml).
+
+
+#### 6. Done
+Now WordPress uses WSO2IS as the identity and authentication service.
