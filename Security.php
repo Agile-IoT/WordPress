@@ -50,9 +50,9 @@ class Security
                 if ($key == "capabilities") {
                     foreach ($value as $name => $val) {
                         if (in_array($name, $this->read_caps)) {
-                            $this->actions[$name] = "READ";
+                            $this->actions[$name] = "read";
                         } else {
-                            $this->actions[$name] = "WRITE";
+                            $this->actions[$name] = "write";
                         }
                     }
                     $values[$key] = $value;

@@ -58,21 +58,24 @@ function wp_signon( $credentials = array(), $secure_cookie = '' ) {
         $token = $sec->authUser($credentials['user_login'], $credentials['user_password']);
         if ($token) {
             $user = $sec->getUser($credentials['user_login']);
-            //TODO temporary solution.... find better user information in WSO2
             $username = "";
             $role = "";
             if(SECURITY_SYSTEM == "AGILE") {
                 $username = $user->user_name;
-                $role = mapRole($user->role);
+                if(isset($user->role)) {
+                    $role = $user->role;
+                } else {
+                    $role = mapRole('user');
+                }
             } else if (SECURITY_SYSTEM == "WSO2") {
 
                 $userdata = explode("@", $user->sub);
                 $username = $userdata[0];
                 $roles = explode(',', $user->roles);
                 if(in_array("admin", $roles)) {
-                    $role = "administrator";
+                    $role = mapRole("admin");
                 } else {
-                    $role = "user";
+                    $role = mapRole('user');
                 }
             }
             $user_id = username_exists( $username);
@@ -85,10 +88,11 @@ function wp_signon( $credentials = array(), $secure_cookie = '' ) {
         }
     }
 }
+
 function mapRole($role) {
     $roles = array(
         'admin' => 'administrator',
-        'user' => 'editor');
+        'user' => 'subscriber');
     return $roles[$role];
 }
 
