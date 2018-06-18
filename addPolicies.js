@@ -32,6 +32,6 @@ for(var policy in policies) {
 		request({ url: 'http://localhost:2000/agile-security/api/v1/pap/client/wordpress/actions.' + policy,
 			method: 'PUT', 
 			json: {policy: policies[policy]}}, 
-			res => {console.log(role, policy, 'done')}).auth(null, null, true, token);
+			res => {console.log('done')}).auth(null, null, true, token);
 	}
 }
