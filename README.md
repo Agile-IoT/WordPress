@@ -145,6 +145,6 @@ where ```$TOKEN``` is an AGILE access token. You can use the access token you ge
 Go to "user" -> "add new user" and fill in the fields to the desired values. For the role attribute chose a WordPress role, e. g. ```Editor```.
 If you set the role to a non-WordPress role, the default role of the user in WordPress will be ```subscriber```.
 
-#### 3. Done
+#### 4. Done
 
 Now WordPress uses AGILE as the identity and authentication service. 
