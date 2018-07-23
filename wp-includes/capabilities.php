@@ -612,10 +612,17 @@ function current_user_can( $capability ) {
         return false;
     }
 
-    if($security->hasToken()) {
-        $security->init();
+    if(SECURITY_SYSTEM == "DEFAULT") {
+        $args = array_slice( func_get_args(), 1 );
+        $args = array_merge( array( $capability ), $args );
+
+        return call_user_func_array( array( $current_user, 'has_cap' ), $args );
+    } else {
+        if ($security->hasToken()) {
+            $security->init();
+        }
+        return $security->evaluate($capability);
     }
-    return $security->evaluate($capability);
 }
 
 /**

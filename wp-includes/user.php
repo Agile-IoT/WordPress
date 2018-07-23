@@ -53,38 +53,42 @@ function wp_signon( $credentials = array(), $secure_cookie = '' ) {
     }
 
     if(isset($credentials['user_login']) && isset($credentials['user_password'])) {
-        $sec = new Security();
-        //$agile->init();
-        $token = $sec->authUser($credentials['user_login'], $credentials['user_password']);
-        if ($token) {
-            $user = $sec->getUser($credentials['user_login']);
-            $username = "";
-            $role = "";
-            if(SECURITY_SYSTEM == "AGILE") {
-                $username = $user->user_name;
-                if(isset($user->role)) {
-                    $role = $user->role;
-                } else {
-                    $role = mapRole('user');
-                }
-            } else if (SECURITY_SYSTEM == "WSO2") {
-
-                $userdata = explode("@", $user->sub);
-                $username = $userdata[0];
-                $roles = explode(',', $user->roles);
-                if(in_array("admin", $roles)) {
-                    $role = mapRole("admin");
-                } else {
-                    $role = mapRole('user');
-                }
-            }
-            $user_id = username_exists( $username);
-            if ( !$user_id ) {
-                $user_id = wp_create_user( $username, $credentials['user_password'], null );
-            }
-            wp_update_user( array( 'ID' => $user_id, 'role' =>  $role ) );
-
+        if (SECURITY_SYSTEM == "DEFAULT") {
             return doDefaultAuth($credentials, $secure_cookie);
+        } else {
+            $sec = new Security();
+            $token = $sec->authUser($credentials['user_login'], $credentials['user_password']);
+            if ($token) {
+
+                $user = $sec->getUser($credentials['user_login']);
+                $username = "";
+                $role = "";
+                if (SECURITY_SYSTEM == "AGILE") {
+                    $username = $user->user_name;
+                    if (isset($user->role)) {
+                        $role = $user->role;
+                    } else {
+                        $role = mapRole('user');
+                    }
+                } else if (SECURITY_SYSTEM == "WSO2") {
+
+                    $userdata = explode("@", $user->sub);
+                    $username = $userdata[0];
+                    $roles = explode(',', $user->roles);
+                    if (in_array("admin", $roles)) {
+                        $role = mapRole("admin");
+                    } else {
+                        $role = mapRole('user');
+                    }
+                }
+                $user_id = username_exists($username);
+                if (!$user_id) {
+                    $user_id = wp_create_user($username, $credentials['user_password'], null);
+                }
+                wp_update_user(array('ID' => $user_id, 'role' => $role));
+
+                return doDefaultAuth($credentials, $secure_cookie);
+            }
         }
     }
 }

@@ -237,18 +237,23 @@ switch ( $step ) {
 			<td><?php _e( 'If you want to run multiple WordPress installations in a single database, change this.' ); ?></td>
 		</tr>
         <tr>
+            <th scope="row"><label for="prefix"><?php _e( 'security framework' ); ?></label></th>
+            <td><input name="security-system" id="security-system" type="text" placeholder="AGILE" size="25" /></td>
+            <td><?php _e( 'The host address of security security' ); ?></td>
+        </tr>
+        <tr>
             <th scope="row"><label for="prefix"><?php _e( 'security security host' ); ?></label></th>
-            <td><input name="agile-host" id="agile-host" type="text" value="agile-security:3000" size="25" /></td>
+            <td><input name="security-host" id="security-host" type="text" placeholder="agile-security:3000" size="25" /></td>
             <td><?php _e( 'The host address of security security' ); ?></td>
         </tr>
         <tr>
             <th scope="row"><label for="prefix"><?php _e( 'security client ID' ); ?></label></th>
-            <td><input name="agile-id" id="agile-id" type="text" value="" size="25" /></td>
+            <td><input name="client-id" id="client-id" type="text" size="25" /></td>
             <td><?php _e( 'The ID of the client entity in security' ); ?></td>
         </tr>
         <tr>
             <th scope="row"><label for="prefix"><?php _e( 'security client secret' ); ?></label></th>
-            <td><input name="agile-secret" id="agile-secret" type="text" value="" size="25" /></td>
+            <td><input name="client-secret" id="client-secret" type="text" size="25" /></td>
             <td><?php _e( 'The secret of the client entity in security' ); ?></td>
         </tr>
 	</table>
@@ -271,9 +276,10 @@ switch ( $step ) {
 		$pwd    = trim( wp_unslash( $_POST['pwd'] ) );
 		$dbhost = trim( wp_unslash( $_POST['dbhost'] ) );
 		$prefix = trim( wp_unslash( $_POST['prefix'] ) );
-		$agile_host = trim( wp_unslash( $_POST['agile-host'] ) );
-		$agile_id = trim( wp_unslash( $_POST['agile-id'] ) );
-		$agile_secret = trim( wp_unslash( $_POST['agile-secret'] ) );
+		$security_system = trim( wp_unslash( $_POST['security-system'] ) );
+		$security_host = trim( wp_unslash( $_POST['security-host'] ) );
+		$client_id = trim( wp_unslash( $_POST['client-id'] ) );
+		$client_secret = trim( wp_unslash( $_POST['client-secret'] ) );
 
 		$step_1  = 'setup-config.php?step=1';
 		$install = 'install.php';
@@ -308,9 +314,10 @@ switch ( $step ) {
 		define( 'DB_USER', $uname );
 		define( 'DB_PASSWORD', $pwd );
 		define( 'DB_HOST', $dbhost );
-		define( 'AGILE_HOST', $agile_host );
-		define( 'AGILE_ID', $agile_id );
-		define( 'AGILE_SECRET', $agile_secret );
+		define( 'SECURITY_SYSTEM', $security_system);
+		define( 'SECURITY_HOST', $security_host );
+		define( 'SECURITY_CLIENT_ID', $client_id );
+		define( 'SECURITY_CLIENT_SECRET', $client_secret );
 
 		/**#@-*/
 
@@ -389,6 +396,7 @@ switch ( $step ) {
                 case 'AGILE_HOST':
                 case 'AGILE_ID':
                 case 'AGILE_SECRET':
+                case 'SECURITY_SYSTEM':
 					$config_file[ $line_num ] = "define( '" . $constant . "'," . $padding . "'" . addcslashes( constant( $constant ), "\\'" ) . "' );\r\n";
 					break;
 				case 'DB_CHARSET':
