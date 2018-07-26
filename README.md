@@ -22,6 +22,7 @@ Go to "Users and Roles" -> "Add" -> "Add New User" and fill in the required fiel
 ##### 2.1. Add the service provider
 Go to "Service Providers" -> "Add". Enter the service provider name, e. g. "wordpress", and register the service.
 ##### 2.2 Configure the authentication mechanism
+###### 2.2.1 Create the service and client credentials
 On the next page (edit page) you can configure the service. Expand the "Inbound Authentication Configuration" tab and expand the "OAuth/OpenID Connect Configuration". Click on "Configure".
 Enter any callback Url, e. g. localhost and click on "add". 
 After the service was successfully added, you can view the OAuth Client Key and Oauth Client Secret of the service. 
@@ -30,6 +31,11 @@ Copy both to the configuration file (wp-config.php) in WordPress as the client c
 
     define( 'SECURITY_CLIENT_ID', 'hgm6eA_B8ZGwIFmJ9iJf_3hE0Jsa' );
     define( 'SECURITY_CLIENT_SECRET', 'E4LROiG6AUE4ZfmCWIaOtW3LyzAa' ); 
+###### 2.2.2 Set the role claim
+In the same view of the service provider edit page, under "Claim Configuration" select "Use Local Claim Dialect", add a claim URI by clicking on "Add Claim Uri" and chose "http://wso2.org/claims/role" in the "Requested Claims" section. 
+
+###### 2.2.3 Save the service provider configuration
+Click on save or update to save the configuration.
 
 ##### 2.3 Add a service user
 
