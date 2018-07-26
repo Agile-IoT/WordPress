@@ -85,7 +85,7 @@ class Security
             $accessSubject = array();
             $resource = array();
             $roles = get_userdata($user->ID)->roles;
-            $role = sizeof($roles) == 0 ? "user" : $roles[0];
+            $role = sizeof($roles) == 0 ? "user" : array_values($roles)[0];;
             $method = strtolower($this->findMethod($capability));
             $action['Attribute'] = array(array(
                 "AttributeId" => "urn:oasis:names:tc:xacml:1.0:action:action-id",
