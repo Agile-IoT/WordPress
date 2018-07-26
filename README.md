@@ -49,7 +49,9 @@ In wp-config.php, you need to add the service user credentials, e. g.:
     define( 'SECURITY_USER_ID', 'wordpress');
     define( 'SECURITY_USER_SECRET', 'k8LZ6t4&fO2s');
 
-The configuration file should containing following lines:
+##### 2.5 Final configuration file in WordPress
+
+The wp-config.php file should containing following lines:
 
     define( 'SECURITY_SYSTEM', 'WSO2');
     define( 'SECURITY_HOST', 'https://wso2is:9443' );
