@@ -42,14 +42,12 @@ Click on save or update to save the configuration.
 Go to "Users and Roles" -> "Add" -> "Add New User" and fill in the required fields. Since this user will be used by wordpress, you can name give it the name "wordpress". 
 On the next page, you should assign the admin role to the new user. If you don't include the admin role, the default role of the user in WordPress will be ```subscriber```. Finish the process.
 
-##### 2.4 Add the service user credentials to the configuration file and adjust the rest of the WordPress configuration
-
 In wp-config.php, you need to add the service user credentials, e. g.:
 
     define( 'SECURITY_USER_ID', 'wordpress');
     define( 'SECURITY_USER_SECRET', 'k8LZ6t4&fO2s');
 
-##### 2.5 Final configuration file in WordPress
+##### 2.4 Final configuration file in WordPress
 
 The wp-config.php file should containing following lines:
 
