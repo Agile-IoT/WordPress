@@ -84,6 +84,7 @@ Go to "Registry" -> "Browse" -> "_system" -> "config" -> "oidc". Expand the "Pro
 Add policies for the WordPress capabilities. You can find example policies for WordPress in the [capabilities XML file](https://github.com/firsti/WordPress/blob/master/caps.xml).
 You can upload the sample policies by going to "Entitlement" -> "Policy Administration" -> "Add New Entitlement Policy" -> "Import Existing Policy" and chose the sample policies file.
 
+Publish the policies by clicking on "Publish To My PDP" and follow the steps to publish them.
 #### 6. Done
 Now WordPress uses WSO2IS as the identity and authentication service.
 
