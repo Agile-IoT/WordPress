@@ -149,3 +149,17 @@
       "level_1": true,
       "level_0": true,
       "delete_posts": true,
+
+      "read_post": true
+    }
+  },
+  "subscriber": {
+    "name": "Subscriber",
+    "capabilities": {
+      "read": true,
+      "level_0": true,
+
+      "read_post": true
+    }
+  }
+}
