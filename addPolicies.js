@@ -4,7 +4,7 @@ var content = fs.readFileSync('caps.json');
 var json = JSON.parse(content);
 var read_caps = ["read", "read_post", "read_private_pages", "read_private_posts", "list_users", "export", "export_others_personal_data"];
 var token = process.argv[2];
-console.log(token);
+var host = process.argv[3];
 var policies = {};
 for(var role in json) {
 	if(json.hasOwnProperty(role)) {
@@ -29,9 +29,9 @@ for(var role in json) {
 
 for(var policy in policies) {
 	if(policies.hasOwnProperty(policy)){
-		request({ url: 'http://localhost:2000/agile-security/api/v1/pap/client/wordpress/actions.' + policy,
+		request({ url: 'http://' + host + ':2000/agile-security/api/v1/pap/client/wordpress/actions.' + policy,
 			method: 'PUT',
 			json: {policy: policies[policy]}},
-			res => {console.log('done')}).auth(null, null, true, token);
+			res => {console.log(res)}).auth(null, null, true, token);
 	}
 }
