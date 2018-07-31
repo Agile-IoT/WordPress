@@ -1,6 +1,6 @@
 var request = require('request');
 var fs = require('fs');
-var content = fs.readFileSync('caps.json');
+var content = fs.readFileSync('../caps.json');
 var json = JSON.parse(content);
 var read_caps = ["read", "read_post", "read_private_pages", "read_private_posts", "list_users", "export", "export_others_personal_data"];
 var token = process.argv[2];
