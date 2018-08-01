@@ -39,6 +39,11 @@ define('DB_COLLATE', '');
 
 /** SECURITY CLIENT CONFIGURATION */
 /*
+// Use the default WordPress implementation for authentication and authorization
+define( 'SECURITY_SYSTEM', 'DEFAULT');
+*/
+/*
+// Use the WSO2IS for authentication and authorization
 define( 'SECURITY_SYSTEM', 'WSO2');
 define( 'SECURITY_HOST', 'https://wso2is:9443' );
 define( 'SECURITY_CLIENT_ID', 'hgm6eA_B8ZGwIFmJ9iJf_3hE0Jsa' );
@@ -47,8 +52,8 @@ define( 'SECURITY_USER_ID', 'wordpress');
 define( 'SECURITY_USER_SECRET', 'k8LZ6t4&fO2s');
 define( 'SECURITY_USER_INFO_PATH', '/oauth2/userinfo?schema=openid');
 define( 'SECURITY_PDP_PATH', '/api/identity/entitlement/decision/pdp');
-define( 'SECURITY_CACHE', false);
 */
+// Use the AGILE for authentication and authorization
 define( 'SECURITY_SYSTEM', 'AGILE');
 define( 'SECURITY_HOST', 'http://agile-security:3000' );
 define( 'SECURITY_CLIENT_ID', 'wordpress' );

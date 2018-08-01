@@ -15,7 +15,7 @@ First include WSO2IS in your stack:
 After you started the stack by ```docker-compose up``` you can start configuring WSO2IS such that it is usable by WordPress.
 
 ### Configuration
-For the configuration you need to login as an admin user. Default admin credentials are ```admin:admin```.
+For the configuration you need to login in WSO2IS (e. g. https://localhost:9443) as an admin user. The default admin credentials are ```admin:admin```.
 #### 1. Add users
 Go to "Users and Roles" -> "Add" -> "Add New User" and fill in the required fields. On the next page, you can assign a role to the user. Finish the process.
 #### 2. Add a and configure a service provider
@@ -88,4 +88,91 @@ Publish the policies by clicking on "Publish To My PDP" and follow the steps to 
 #### 6. Done
 Now WordPress uses WSO2IS as the identity and authentication service.
 
+#### Caching in WSO2IS
+If activated, WSO2IS caches the policy evaluation results in memory for each capability according to [Policy Caching](https://docs.wso2.com/display/IS540/Improving+XACML+PDP+Performance+with+Caching+Techniques#ImprovingXACMLPDPPerformancewithCachingTechniques-PolicyCache).
+
+Since the configuration for caching have to be done within the WSO2IS as described before, the WordPress variable ```SECURITY_CACHE``` does not have any effect to the caching.  
 ## AGILE
+
+Before starting AGILE security, add WordPress default roles. For this modify ```$DATA/security/idm/agile-idm-core-conf.js```, where ```$DATA``` is you AGILE path, e.g. ```~/.agile```.
+
+Modify the role attribute of the ```/user``` type and add the default WordPress roles ```"administrator", "editor", "author", "contributor"``` and ```"subscriber"```, such that it looks as follows:
+
+    {
+       "id": "/user",
+       "type": "object",
+       "properties": {
+         "user_name": {
+           "type": "string"
+         },
+         "auth_type": {
+           "type": "string",
+           "enum": ["agile-local"]
+         },
+         "password": {
+           "type": "string"
+         },
+         "role": {
+           "type": "string",
+           "enum": ["admin", "administrator", "editor", "author", "contributor", "subscriber"]
+         },
+         "credentials": {
+           "type": "object",
+           "additionalProperties": true
+         }
+       },
+       "required": ["user_name", "auth_type"]
+     }
+
+### Configuration
+
+Change the configuration in wp-config.php to fit AGILE, e. g.:
+
+    define( 'SECURITY_SYSTEM', 'AGILE');
+    define( 'SECURITY_HOST', 'http://agile-security:3000' );
+    define( 'SECURITY_CLIENT_ID', 'wordpress' );
+    define( 'SECURITY_CLIENT_SECRET', 'secret' );
+    define( 'SECURITY_USER_ID', '');
+    define( 'SECURITY_USER_SECRET', '');
+    define( 'SECURITY_USER_INFO_PATH', '/oauth2/api/userinfo/');
+    define( 'SECURITY_PDP_PATH', '/api/v1//pdp/batch/');
+    define( 'SECURITY_CACHE', false);
+
+
+#### 1. Add the WordPress client 
+Add a client with the credentials set in the configuration file described before, e. g. id ```wordpress``` with the corresponding secret.
+
+For this go to "device manager" -> "client" -> "add new client" and fill in the required fields.
+
+#### 2. Add WordPress policies to the client
+
+To add the policies to decide whether a WordPress user is allowed to do something or not, you need to set them to the wordpress client. For this, go to client overview ("client" tab).
+At the wordpress client click on "policies" and the policies.
+
+To add a default policies, you can run the script [addPolicies.js](https://github.com/Agile-IoT/WordPress/blob/master/addPolicies.js). This will add the policies according to [caps.json](https://github.com/Agile-IoT/WordPress/blob/master/caps.json). 
+You can run with
+
+    node addPolicies.js $TOKEN
+    
+where ```$TOKEN``` is an AGILE access token. You can use the access token you get, when you login in AGILE-OSJS. You need to be the owner or an administrator to add policies to the wordpress client by default.
+
+#### 3. Add WordPress users
+
+Go to "user" -> "add new user" and fill in the fields to the desired values. For the role attribute chose a WordPress role, e. g. ```Editor```.
+If you set the role to a non-WordPress role, the default role of the user in WordPress will be ```subscriber```.
+
+#### 4. Done
+
+Now WordPress uses AGILE as the identity and authentication service.
+
+
+#### Caching with AGILE
+If caching is activated by setting ```SECURITY_CACHE``` to ```true```, WordPress evaluates all capabilities defined in [caps.json](https://github.com/Agile-IoT/WordPress/blob/4.9-branch/caps.json) at once with AGILE.
+
+On the other hand, if it is set to ```false``` WordPress evaluates the result for each capability through AGILE. However, if a capability is needed twice within one request, the result of the first evaluation is used.
+## DEFAULT
+To use the default WordPress implementation the variable ```SECURITY_SYSTEM``` has to be set to ```DEFAULT```, e .g.:
+
+    define( 'SECURITY_SYSTEM', 'DEFAULT');
+
+With that configuration no security framework is used, but only the default WordPress implementation for authentication and authorization.
