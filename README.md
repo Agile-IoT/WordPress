@@ -145,6 +145,12 @@ For this go to "device manager" -> "client" -> "add new client" and fill in the 
 To add the policies to decide whether a WordPress user is allowed to do something or not, you need to set them to the wordpress client. For this, go to client overview ("client" tab).
 At the wordpress client click on "policies" and the policies.
 
+Then get a token for the wordpress client like this:
+
+```
+
+curl -H 'Content-Type: application/x-www-form-urlencoded' -X POST --user 'wordpress:secret' -d 'grant_type=password&username=agile&password=secret'  agilegw.local:3000/oauth2/token
+```
 To add a default policies, you can run the script [addPolicies.js](https://github.com/Agile-IoT/WordPress/blob/master/addPolicies.js). This will add the policies according to [caps.json](https://github.com/Agile-IoT/WordPress/blob/master/caps.json). 
 You can run with
 
